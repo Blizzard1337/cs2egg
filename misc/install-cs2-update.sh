@@ -16,7 +16,7 @@ INSTALL_DEST="/usr/local/bin/update-cs2-centralized.sh"
 SERVICE_DEST="/etc/systemd/system/cs2-vpk-daemon.service"
 CRON_FILE="/etc/cron.d/cs2-update"
 LOG_FILE="/var/log/cs2-update.log"
-GITHUB_SCRIPT="https://raw.githubusercontent.com/K4ryuu/CS2-Egg/main/misc/update-cs2-centralized.sh"
+GITHUB_SCRIPT="https://raw.githubusercontent.com/Blizzard1337/cs2egg/main/misc/update-cs2-centralized.sh"
 
 # ── Colors ────────────────────────────────────────────────────────────────────
 
