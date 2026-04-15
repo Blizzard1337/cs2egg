@@ -35,7 +35,7 @@ STEAMCMD_DIR="/root/steamcmd"
 #   Single: "sples1/k4ryuu-cs2"
 #   Multiple: "sples1/k4ryuu-cs2 ghcr.io/k4ryuu/cs2-egg"
 #   With commas: "sples1/k4ryuu-cs2,ghcr.io/k4ryuu/cs2-egg"
-SERVER_IMAGE="sples1/k4ryuu-cs2 ghcr.io/k4ryuu/cs2-egg"
+SERVER_IMAGE="blizzard1121/csworld-cs2"
 
 # Optional: Enable automatic server restart after update (true/false)
 # Set to "false" if you want servers to sync on next manual restart
