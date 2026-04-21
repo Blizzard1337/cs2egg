@@ -13,7 +13,7 @@
         "background:https://images8.alphacoders.com/132/1329760.jpeg"
     ],
   "docker_images": {
-    "CSWorld CS2 - GitHub - Unlimited": "docker.io/blizzard1121/csworld-cs2:latest"
+    "CSWorld CS2 - GitHub - Unlimited": "ghcr.io/blizzard1337/csworld-cs2:latest"
   },
   "file_denylist": [],
   "startup": "./game/cs2.sh {{CUSTOM_PARAMS}} -dedicated +ip 0.0.0.0 -port {{SERVER_PORT}} +map {{SRCDS_MAP}} -maxplayers {{SRCDS_MAXPLAYERS}} +sv_setsteamaccount {{STEAM_ACC}} +game_type {{GAME_TYPE}} +game_mode {{GAME_MODE}}",
