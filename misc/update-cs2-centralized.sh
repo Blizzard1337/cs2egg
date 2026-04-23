@@ -2,15 +2,17 @@
 # KitsuneLab CS2 Centralized Update Script
 # Automatically updates CS2 files and pushes them to all server containers
 #
-# Usage: ./update-cs2-centralized.sh [--simulate]
+# Usage: ./update-cs2-centralized.sh [--simulate] [--validate]
 #        ./update-cs2-centralized.sh --daemon
 #
 #   --simulate    Skip SteamCMD update, simulate update and trigger restart logic
+#   --validate    Force one-shot file validation (steamcmd validate) for this run
+#                 only. Configured VALIDATE_INSTALL value is not touched.
 #   --daemon      Run as event listener daemon - pushes game files instantly when
 #                 a CS2 container starts (new server or restart). Install as a
 #                 systemd service for automatic startup.
 #
-# Version: 1.0.41
+# Version: 1.0.44
 
 set -euo pipefail
 
@@ -736,17 +738,22 @@ _sync_to_volume() {
 
     local container_mount_dst="/tmp/cs2-shared"
 
-    # Heartbeat marker - touch BEFORE sync so concurrent entrypoint detect_daemon_vpk
-    # sees a fresh mtime immediately and doesn't fall through to SteamCMD while we work.
+    # CRITICAL: marker MUST be touched before any push work.
+    # The container's detect_daemon_vpk() uses marker presence as the sole daemon-detection signal,
+    # so a marker that lags the push would cause entrypoint to race past it and fall through to SteamCMD.
     mkdir -p "$dest/egg" 2>/dev/null && touch "$dest/egg/.daemon-managed" 2>/dev/null
     chown -R pterodactyl:pterodactyl "$dest/egg" 2>/dev/null || true
 
-    # Sync non-VPK base files; exclude per-server configs and gameinfo.gi
+    # Sync non-VPK base files; exclude per-server configs, gameinfo.gi, and
+    # SteamCMD-only dirs (Steam/, steamapps/) — the CS2 server doesn't need them at
+    # runtime, and the container-side cleanup would just delete them each boot.
     # --no-o --no-g: don't overwrite ownership (preserve volume root owner = pterodactyl)
-    rsync -aKz --no-o --no-g \
+    rsync -aK --no-o --no-g \
         --exclude '*.vpk' \
         --exclude 'cfg/' \
         --exclude 'game/csgo/gameinfo.gi' \
+        --exclude 'Steam/' \
+        --exclude 'steamapps/' \
         "$src/" "$dest" 2>/dev/null || {
         log_warn "rsync failed for $container"
         return 1
@@ -850,6 +857,8 @@ _sync_to_volume() {
     local human_size
     human_size=$(format_bytes "$vpk_size")
     log_info "  ${DIM}→ $container: $vpk_count VPK(s), ${human_size}${RESET}"
+
+    chown -R pterodactyl:pterodactyl "$dest/game" 2>/dev/null || true
 
     return 0
 }
@@ -1292,23 +1301,29 @@ main() {
                 SIMULATE_MODE=true
                 shift
                 ;;
+            --validate)
+                VALIDATE_INSTALL="true"
+                log_warn "One-shot validate requested — steamcmd will verify every file this run"
+                shift
+                ;;
             --daemon)
                 validate_config
-                [ "$VPK_PUSH_METHOD" = "off" ] && {
+                if [ "$VPK_PUSH_METHOD" = "off" ]; then
                     log_error "Daemon mode requires VPK_PUSH_METHOD to be set (not \"off\")"
                     exit 1
-                }
+                fi
                 run_event_daemon
                 exit 0
                 ;;
             *)
                 log_error "Unknown argument: $1"
                 echo ""
-                echo "Usage: $0 [--simulate]"
+                echo "Usage: $0 [--simulate] [--validate]"
                 echo "       $0 --daemon"
                 echo ""
                 echo "Options:"
                 echo "  --simulate    Simulate update mode (skip SteamCMD, trigger restart logic)"
+                echo "  --validate    Force one-shot file validation (steamcmd validate) — does not persist"
                 echo "  --daemon      Run as event listener - push game files on container start"
                 echo ""
                 exit 1
