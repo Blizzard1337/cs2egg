@@ -8,7 +8,7 @@
   "name": "CSWorld CS2 Egg",
   "author": "k4ryuu@icloud.com",
   "description": "The SteamRT3 Platform image for Pterodactyl & Pelican CS2 servers is packed with numerous features, designed to simplify server management and reduce hassle.",
-    "features": [
+  "features": [
         "banner:https://images8.alphacoders.com/132/1329760.jpeg",
         "background:https://images8.alphacoders.com/132/1329760.jpeg"
     ],
